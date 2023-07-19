@@ -8,6 +8,10 @@ Accepts audio input from a microphone using a [Sounddevice](https://github.com/s
 
 The HTML-based GUI allows you to check the transcription results and make detailed settings for the faster-whisper.
 
+## About This Fork
+This fork is intended to enhance the original [speech-to-text](https://github.com/reriiasu/speech-to-text) functionality by adding English to Japanese translation capabilities and specializing in streaming platforms like twitch.tv and YouTube.
+Please note that currently, no custom features have been implemented.
+
 ## Transcription speed
 
 If the sentences are well separated, the transcription takes less than a second.

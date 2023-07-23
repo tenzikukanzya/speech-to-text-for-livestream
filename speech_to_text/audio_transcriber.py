@@ -2,13 +2,17 @@ import asyncio
 import functools
 import eel
 import queue
+
+import soundcard as sc
+
 import numpy as np
+
 
 from typing import NamedTuple
 from faster_whisper import WhisperModel
 from concurrent.futures import ThreadPoolExecutor
 
-from .utils.audio_utils import create_audio_stream
+from .utils.audio_utils import sd_create_audio_stream,sc_create_audio_stream,SoundCardStream
 from .vad import Vad
 from .utils.file_utils import write_audio
 from .websoket_server import WebSocketServer
@@ -17,6 +21,7 @@ from .openai_api import OpenAIAPI
 
 class AppOptions(NamedTuple):
     audio_device: int
+    internal_audio: bool = False
     silence_limit: int = 8
     noise_threshold: int = 5
     non_speech_threshold: float = 0.1
@@ -24,7 +29,6 @@ class AppOptions(NamedTuple):
     create_audio_file: bool = True
     use_websocket_server: bool = False
     use_openai_api: bool = False
-
 
 class AudioTranscriber:
     def __init__(
@@ -87,7 +91,7 @@ class AudioTranscriber:
                 except Exception as e:
                     eel.on_recive_message(str(e))
 
-    def process_audio(self, audio_data: np.ndarray, frames: int, time, status):
+    def process_audio(self, audio_data: np.ndarray, frames: int = None, time = None, status = None):
         is_speech = self.vad.is_speech(audio_data)
         if is_speech:
             self.silence_counter = 0
@@ -169,9 +173,13 @@ class AudioTranscriber:
     async def start_transcription(self):
         try:
             self.transcribing = True
-            self.stream = create_audio_stream(
-                self.app_options.audio_device, self.process_audio
-            )
+            if self.app_options.internal_audio == True:
+                self.stream = sc_create_audio_stream(self.process_audio)
+            else:
+                self.stream = sd_create_audio_stream(
+                    self.app_options.audio_device, self.process_audio
+                )
+
             self.stream.start()
             self._running.set()
             self._transcribe_task = asyncio.run_coroutine_threadsafe(

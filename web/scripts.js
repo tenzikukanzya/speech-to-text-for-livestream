@@ -477,12 +477,19 @@ function addTimeupdateEventListener() {
   });
 }
 
+function handleInternalAudioChange() {
+  document.getElementById('internal_audio').addEventListener('change', function() {
+      document.getElementById('audio_device').disabled = this.checked;
+  });
+}
+
 window.addEventListener("load", (event) => {
   updateDevices();
   setDropdownOptions();
   setUserSettings();
   addButtonClickEventListener();
   addTimeupdateEventListener();
+  handleInternalAudioChange();
 });
 
 function copyToClipboard(elementId) {
